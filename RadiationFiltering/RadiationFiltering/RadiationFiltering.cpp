@@ -6,6 +6,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define SAMPLES   65536
+
+uint16_t input[SAMPLES];
+double floatInput[SAMPLES];
+
+uint16_t output[SAMPLES];
+double floatOutput[SAMPLES];
+
 
 
 void intToFloat(uint16_t *input, double *output, int length)
@@ -35,16 +43,11 @@ void floatToInt(double *input, uint16_t *output, int length)
 
 
 
-#define SAMPLES   65536
+
 
 int _tmain(int argc, _TCHAR* argv[])
 {
 	int size;
-	uint16_t input[SAMPLES];
-	double floatInput[SAMPLES];
-
-	uint16_t output[SAMPLES];
-//	double floatOutput[SAMPLES];
 
 	FILE * sampleFid;
 	FILE * sampleOutFid;
@@ -60,7 +63,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		perror("File not opened");
 		return 1;
 	}
-	/*
+	
 	// open the output waveform file
 	err = fopen_s(&sampleOutFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\Outsample.bin", "wb");
 	if (err != 0)
@@ -75,7 +78,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		perror("File not opened");
 		return 1;
 	}
-	*/
+	
 //
 //	sampleFid = fopen("sample.bin", "rb");
 	//if (sampleFid == 0) {
@@ -94,10 +97,10 @@ int _tmain(int argc, _TCHAR* argv[])
 		// perform the filtering
 //		firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
 		// convert to ints
-//		floatToInt(floatOutput, output, size);
+		floatToInt(floatOutput, output, size);
 		// write samples to file
-//		fwrite(output, sizeof(int16_t), size, sampleOutFid); 
-//		fwrite(output, sizeof(int16_t), size, sampleOutTFid);
+		fwrite(output, sizeof(int16_t), size, sampleOutFid); 
+		fwrite(output, sizeof(int16_t), size, sampleOutTFid);
 	} while (size != 0);
 
 
