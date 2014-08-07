@@ -30,15 +30,17 @@ void floatToInt(double *input, uint16_t *output, int length)
 	int i;
 
 	for (i = 0; i < length; i++) {
-		if (input[i] > 32767.0) {
-			input[i] = 32767.0;
-		}
-		else if (input[i] < -32768.0) {
-			input[i] = -32768.0;
-		}
+		//This stuff is making sure the data is not out of range.
+//		if (input[i] > 32767.0) {
+//			input[i] = 32767.0;
+//		}
+//		else if (input[i] < -32768.0) {
+//			input[i] = -32768.0;
+//		}
 		// convert
 		output[i] = (int16_t)input[i];
 	}
+
 }
 
 
@@ -72,7 +74,7 @@ int _tmain(int argc, _TCHAR* argv[])
 		return 1;
 	}
 
-	err = fopen_s(&sampleOutTFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\OutsampleText.txt", "wt");
+	err = fopen_s(&sampleOutTFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\OutsampleText.csv", "wt");
 	if (err != 0)
 	{
 		perror("File not opened");
@@ -87,9 +89,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	//}
 
 
+	uint16_t test = 65000;
 
 	// process all of the samples
-	do {
+	//do {
 	    // read samples from file
 		size = fread(input, sizeof(uint16_t), SAMPLES, sampleFid);
 		// convert to doubles
@@ -97,11 +100,19 @@ int _tmain(int argc, _TCHAR* argv[])
 		// perform the filtering
 //		firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
 		// convert to ints
-		floatToInt(floatOutput, output, size);
+
+
+
+		// Use FloatInput until I put in the FIR code.
+		floatToInt(floatInput, output, size);
 		// write samples to file
 		fwrite(output, sizeof(int16_t), size, sampleOutFid); 
-		fwrite(output, sizeof(int16_t), size, sampleOutTFid);
-	} while (size != 0);
+		//
+		for (int i = 0; i < 1000; ++i)
+		{ 
+			fprintf(sampleOutTFid, "%hu\n", output[i]);
+		}
+//	} while (size != 0);
 
 
 
