@@ -45,7 +45,10 @@ void floatToInt(double *input, uint16_t *output, int length)
 
 
 
+/*
+ * The arguments will be coefficientsFile, inputFileName, numberOfChannels, inputChannel, outputChannel
 
+*/
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -53,13 +56,14 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	FILE * sampleFid;
 	FILE * sampleOutFid;
-	FILE * sampleOutTFid;
+	FILE * sampleOutTextFid;
 	std::cout << "Hello World" << std::endl;
 	errno_t err;
 
 
 	// open the input waveform file
-	err = fopen_s(&sampleFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\sample.bin", "rb");
+	//This file has to reside within the project directory.
+	err = fopen_s(&sampleFid, "sample9MHz4CH.bin", "rb");
 	if (err != 0)
 	{
 		perror("File not opened");
@@ -67,14 +71,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	}
 	
 	// open the output waveform file
-	err = fopen_s(&sampleOutFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\Outsample.bin", "wb");
+	err = fopen_s(&sampleOutFid, "Outsample.bin", "wb");
 	if (err != 0)
 	{
 		perror("File not opened");
 		return 1;
 	}
 
-	err = fopen_s(&sampleOutTFid, "C:\\Users\\tdouglas\\Documents\\GitHub\\Radiation\\RadiationFiltering\\OutsampleText.csv", "wt");
+	err = fopen_s(&sampleOutTextFid, "OutsampleText.csv", "wt");
 	if (err != 0)
 	{
 		perror("File not opened");
@@ -89,7 +93,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	//}
 
 
-	uint16_t test = 65000;
+
 
 	// process all of the samples
 	//do {
@@ -108,14 +112,26 @@ int _tmain(int argc, _TCHAR* argv[])
 		// write samples to file
 		fwrite(output, sizeof(int16_t), size, sampleOutFid); 
 		//
-		for (int i = 0; i < 1000; ++i)
+
+		//This portion is test code to output our data into a readable format.
+		//We are printing the first 1000 entries just to make it easier to read in excel.
+		//The input file is currently in 4 Channels (ie: 4 columns of data).  Only the first 
+		//channel is valid.  I am simply putting it back into the 4 columns.  This is all
+		//hardcoded for now but the number of channels will ultimately be passed in.
+		for (int i = 0; i < 250; ++i)
 		{ 
-			fprintf(sampleOutTFid, "%hu\n", output[i]);
+			for (int y = 0; y < 4; ++y)
+			{
+				fprintf(sampleOutTextFid, "%hu,", output[(i*4)+y]);
+			
+			}
+			fprintf(sampleOutTextFid, "\n");
 		}
 //	} while (size != 0);
 
-
-
+		fclose(sampleFid);
+		fclose(sampleOutFid);
+		fclose(sampleOutTextFid);
 
 
 
