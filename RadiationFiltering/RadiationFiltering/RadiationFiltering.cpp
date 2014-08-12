@@ -5,6 +5,7 @@
 #include <iostream>
 #include <stdint.h>
 #include <stdio.h>
+#include <string>
 
 #define SAMPLES   65536
 
@@ -43,6 +44,21 @@ void floatToInt(double *input, uint16_t *output, int length)
 
 }
 
+/*
+* Parse the input array and try to get the samples that we need to filter out.  Make
+* sure to not disturbe the original array as we need it to write our final output.
+*/
+bool parseInputSamplesArray(uint16_t * input, uint16_t size, uint16_t numberOfChannels, 
+							uint16_t inputChannel, uint16_t * output)
+{
+
+
+
+
+
+	return true;
+
+}
 
 
 /*
@@ -50,20 +66,31 @@ void floatToInt(double *input, uint16_t *output, int length)
 
 */
 
-int _tmain(int argc, _TCHAR* argv[])
+int main(int argc, char * argv[])
 {
-	int size;
 
 	FILE * sampleFid;
 	FILE * sampleOutFid;
 	FILE * sampleOutTextFid;
-	std::cout << "Hello World" << std::endl;
+
 	errno_t err;
+	int fileSize;
+	
+
+
+	if (argc != 6)
+	{
+		perror("Wrong number of arguments for this program");
+	}
+	//Get the arguments
+	printf("%s\n", argv[2]);
+	std::string inputFileName = argv[2];
+
 
 
 	// open the input waveform file
 	//This file has to reside within the project directory.
-	err = fopen_s(&sampleFid, "sample9MHz4CH.bin", "rb");
+	err = fopen_s(&sampleFid, "inputFileName", "rb");
 	if (err != 0)
 	{
 		perror("File not opened");
@@ -84,7 +111,19 @@ int _tmain(int argc, _TCHAR* argv[])
 		perror("File not opened");
 		return 1;
 	}
+
+
+	//Read in the sample file 16 bits at a time
+    //size_t fread(void * ptr, size_t size, size_t count, FILE * stream);
+	//Reads an array of count elements, each one with a size of size bytes, from the 
+	//stream and stores them in the block of memory specified by ptr.
+	fileSize = fread(input, sizeof(uint16_t), SAMPLES, sampleFid);
 	
+	//if(!(parseInputSamplesArray(uint16_t * input, uint16_t size, uint16_t numberOfChannels,
+//		uint16_t inputChannel, uint16_t * output)
+
+
+
 //
 //	sampleFid = fopen("sample.bin", "rb");
 	//if (sampleFid == 0) {
@@ -98,9 +137,9 @@ int _tmain(int argc, _TCHAR* argv[])
 	// process all of the samples
 	//do {
 	    // read samples from file
-		size = fread(input, sizeof(uint16_t), SAMPLES, sampleFid);
+
 		// convert to doubles
-		intToFloat(input, floatInput, size);
+		intToFloat(input, floatInput, fileSize);
 		// perform the filtering
 //		firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
 		// convert to ints
@@ -108,9 +147,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 		// Use FloatInput until I put in the FIR code.
-		floatToInt(floatInput, output, size);
+		floatToInt(floatInput, output, fileSize);
 		// write samples to file
-		fwrite(output, sizeof(int16_t), size, sampleOutFid); 
+		fwrite(output, sizeof(int16_t), fileSize, sampleOutFid); 
 		//
 
 		//This portion is test code to output our data into a readable format.
