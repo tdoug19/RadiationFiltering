@@ -17,6 +17,7 @@ double doubleInput[SAMPLES];
 
 uint16_t output[SAMPLES];
 double doubleOutput[SAMPLES];
+uint16_t allChannelOutput[SAMPLES * 4];
 
 
 /** 
@@ -68,10 +69,26 @@ void shiftSamplesAroundZero(double * input, long size, double shiftValue)
 
 }
 
+
 /**
-* Convert a dobule array back to an integer array
+* Convert a double array back to an integer array
 */
-void convertAndShiftOutput(double *input, uint16_t *output, int length, double shiftValue)
+void firFilter(double * input, double * output, long size)
+{
+	for (int i = 0; i < size; ++i)
+	{
+		output[i] = input[i];
+	}
+
+
+
+}
+
+
+/**
+* Convert a double array back to an integer array
+*/
+void convertAndShiftOutput(double *input, uint16_t *output, long length, double shiftValue)
 {
 	int i;
 
@@ -99,7 +116,15 @@ void convertAndShiftOutput(double *input, uint16_t *output, int length, double s
 
 }
 
+/**
+* Create the final output to write to the ouput file.
+*/
+void createFinalOutput(uint16_t * originalInput, uint16_t * input, uint16_t * output, long  length)
+{
 
+
+
+}
 
 
 /*
@@ -176,17 +201,18 @@ int main(int argc, char * argv[])
 	shiftSamplesAroundZero(doubleInput, SAMPLES, 8191);
 
 
-	// perform the filtering
-    //		firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
-	// convert to ints
-
-
-
-	// Use FloatInput until I put in the FIR code.
-	//doubleToInt(doubleOutput, output, fileSize);
-	convertAndShiftOutput(doubleInput, output, SAMPLES, 8191);
+	//Step 4 - Perform the filtering
+    //	firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
+	firFilter(doubleInput, doubleOutput, SAMPLES);
 
 	
+	//Step 5 - Massage the sampled data
+	convertAndShiftOutput(doubleOutput, output, SAMPLES, 8191);
+
+	//Step 5 - Write the final ouput
+	
+	createFinalOutput(allChannelInput, output, allChannelOutput, (SAMPLES * numberOfChannels));
+
 	// write samples to file
 		//fwrite(output, sizeof(int16_t), fileSize, sampleOutFid); 
 		//
@@ -214,17 +240,9 @@ int main(int argc, char * argv[])
 
 
 
-//	} while (size != 0);
-
 		fclose(sampleFid);
 		fclose(sampleOutFid);
 		fclose(sampleOutTextFid);
-
-
-
-
-
-
 
 	return 0;
 }
