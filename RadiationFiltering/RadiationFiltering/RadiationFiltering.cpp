@@ -24,6 +24,20 @@ FILE * sampleOutFid;
 FILE * sampleOutTextFid;
 
 
+
+#define FILTER_LEN  8
+double coeffs[FILTER_LEN] =
+{
+	0.5,
+	0.392857143,
+	0.285714286,
+	0.178571429,
+	0.071428571,
+	- 0.035714286,
+	- 0.142857143,
+	- 0.25
+};
+
 /** 
 * Convert an integer array to a double array
 */
@@ -74,17 +88,60 @@ void shiftSamplesAroundZero(double * input, long size, double shiftValue)
 }
 
 
-/**
-* Convert a double array back to an integer array
-*/
-void firFilter(double * input, double * output, long size)
+
+//First is the definition of the working array to hold the input samples.I have defined the array 
+//length to handle up to 80 input samples per function call, and a filter length up to 
+//63 coefficients.  In other words, the filter function that uses this working array will 
+//support between 1 to SAMPLES input samples, and a filter length between 1 and 63.
+
+// maximum number of inputs that can be handled
+// in one function call
+#define MAX_INPUT_LEN   SAMPLES
+// maximum length of filter than can be handled
+#define MAX_FLT_LEN     63
+// buffer to hold all of the input samples
+#define BUFFER_LEN      (MAX_FLT_LEN - 1 + MAX_INPUT_LEN)
+
+// array to hold input samples
+double insamp[BUFFER_LEN];
+
+// FIR init
+void firFilterInit(void)
 {
-	for (int i = 0; i < size; ++i)
-	{
-		output[i] = input[i];
+	memset(insamp, 0, sizeof(insamp));
+}
+
+
+/**
+* Implement the FIR filter 
+*/
+void firFilter(double *coeffs, double *input, double *output,
+	int length, int filterLength)
+{
+	double acc;     // accumulator for MACs
+	double *coeffp; // pointer to coefficients
+	double *inputp; // pointer to input samples
+	int n;
+	int k;
+
+	// put the new samples at the high end of the buffer
+	memcpy(&insamp[filterLength - 1], input,
+		length * sizeof(double));
+
+	// apply the filter to each input sample
+	for (n = 0; n < length; n++) {
+		// calculate output n
+		coeffp = coeffs;
+		inputp = &insamp[filterLength - 1 + n];
+		acc = 0;
+		for (k = 0; k < filterLength; k++) {
+			acc += (*coeffp++) * (*inputp--);
+		}
+		output[n] = acc;
 	}
-
-
+	// shift input samples back in time for next time
+	memmove(&insamp[0], &insamp[length],
+		(filterLength - 1) * sizeof(double));
 
 }
 
@@ -201,6 +258,8 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 
+	// initialize the filter
+	firFilterInit();
 
 	//Read in the sample file 16 bits at a time
     //size_t fread(void * ptr, size_t size, size_t count, FILE * stream);
@@ -221,7 +280,10 @@ int main(int argc, char * argv[])
 
 	//Step 4 - Perform the filtering
     //	firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
-	firFilter(doubleInput, doubleOutput, SAMPLES);
+	//firFilter(doubleInput, doubleOutput, SAMPLES);
+
+	firFilter(coeffs, doubleInput, doubleOutput, SAMPLES, 4);
+
 
 	
 	//Step 5 - Massage the sampled data
