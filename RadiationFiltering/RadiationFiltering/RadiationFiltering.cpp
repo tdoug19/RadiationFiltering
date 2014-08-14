@@ -19,6 +19,10 @@ uint16_t output[SAMPLES];
 double doubleOutput[SAMPLES];
 uint16_t allChannelOutput[SAMPLES * 4];
 
+FILE * sampleFid;
+FILE * sampleOutFid;
+FILE * sampleOutTextFid;
+
 
 /** 
 * Convert an integer array to a double array
@@ -119,11 +123,27 @@ void convertAndShiftOutput(double *input, uint16_t *output, long length, double 
 /**
 * Create the final output to write to the ouput file.
 */
-void createFinalOutput(uint16_t * originalInput, uint16_t * input, uint16_t * output, long  length)
+void createFinalOutput(uint16_t * originalInput, uint16_t * input, uint16_t * output, 
+						long outputChannel, long  length, long numberOfChannels)
 {
-
-
-
+	for (int i = 0; i < (length/numberOfChannels); ++i)
+		{ 
+			for (int y = 0; y < numberOfChannels; ++y)
+			{
+				if (outputChannel == y)
+				{
+					output[(i*numberOfChannels) + y] = input[i];
+					
+					fprintf(sampleOutTextFid, "%hu,", output[(i*numberOfChannels) + y]);
+				}
+				else
+				{
+					output[(i*numberOfChannels) + y] = originalInput[(i*numberOfChannels) + y];
+					fprintf(sampleOutTextFid, "%hu,", output[(i*numberOfChannels) + y]);
+				}
+			}
+			fprintf(sampleOutTextFid, "\n");
+		}
 }
 
 
@@ -135,17 +155,14 @@ void createFinalOutput(uint16_t * originalInput, uint16_t * input, uint16_t * ou
 int main(int argc, char * argv[])
 {
 
-	FILE * sampleFid;
-	FILE * sampleOutFid;
-	FILE * sampleOutTextFid;
+	
 
 	errno_t err;
 	int fileSize;
 	long numberOfChannels = 0;
 	long inputChannel = 0;
+	long outputChannel = 0;
 	
-
-
 	if (argc != 6)
 	{
 		perror("Wrong number of arguments for this program");
@@ -157,6 +174,7 @@ int main(int argc, char * argv[])
 	char *p;
 	numberOfChannels = strtol(argv[3], &p, 10);
 	inputChannel = strtol(argv[4], &p, 10);
+	outputChannel = strtol(argv[5], &p, 10);
 
 
 	// open the input waveform file
@@ -209,9 +227,9 @@ int main(int argc, char * argv[])
 	//Step 5 - Massage the sampled data
 	convertAndShiftOutput(doubleOutput, output, SAMPLES, 8191);
 
-	//Step 5 - Write the final ouput
-	
-	createFinalOutput(allChannelInput, output, allChannelOutput, (SAMPLES * numberOfChannels));
+	//Step 6 - Write the final ouput
+	createFinalOutput(allChannelInput, output, allChannelOutput, outputChannel, 
+						(SAMPLES * numberOfChannels), numberOfChannels);
 
 	// write samples to file
 		//fwrite(output, sizeof(int16_t), fileSize, sampleOutFid); 
@@ -232,12 +250,10 @@ int main(int argc, char * argv[])
 			//fprintf(sampleOutTextFid, "\n");
 //		}
 
-		for (int i = 0; i < 250; ++i)
-		{
-			fprintf(sampleOutTextFid, "%hu,%hu\n", sampleInput[i], output[i]);
-		}
-
-
+		//for (int i = 0; i < 250; ++i)
+//		{
+//			fprintf(sampleOutTextFid, "%hu,%hu\n", sampleInput[i], output[i]);
+//		}
 
 
 		fclose(sampleFid);
