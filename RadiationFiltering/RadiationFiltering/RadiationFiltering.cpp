@@ -38,6 +38,22 @@ double coeffs[FILTER_LEN] =
 	- 0.25
 };
 
+bool parseCoefficientsFile(FILE * coeffFile, double coeffs)
+{
+	errno_t err;
+	// open the input waveform file
+	//This file has to reside within the project directory.
+	err = fopen_s(&sampleFid, coeffFile, "rb");
+	if (err != 0)
+	{
+		perror("File not opened");
+		return 1;
+	}
+
+
+
+}
+
 /** 
 * Convert an integer array to a double array
 */
@@ -232,7 +248,7 @@ int main(int argc, char * argv[])
 	numberOfChannels = strtol(argv[3], &p, 10);
 	inputChannel = strtol(argv[4], &p, 10);
 	outputChannel = strtol(argv[5], &p, 10);
-
+	std::string coefficientsFileName = argv[1];
 
 	// open the input waveform file
 	//This file has to reside within the project directory.
