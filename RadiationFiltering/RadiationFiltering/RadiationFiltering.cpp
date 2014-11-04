@@ -22,38 +22,43 @@ uint16_t allChannelOutput[SAMPLES * 4];
 FILE * sampleFid;
 FILE * sampleOutFid;
 FILE * sampleOutTextFid;
+FILE * coefficientFid;
 
 
 
-#define FILTER_LEN  8
+#define FILTER_LEN  9
 double coeffs[FILTER_LEN] =
 {
-	0.5,
-	0.392857143,
-	0.285714286,
-	0.178571429,
-	0.071428571,
-	- 0.035714286,
-	- 0.142857143,
-	- 0.25
+	-0.75,
+	1.25,
+	0.75,
+	-2.25,
+	0,
+	2.25,
+	-0.75,
+	-1.25,
+	0.75
 };
 
-bool parseCoefficientsFile(FILE * coeffFile, double coeffs)
+/**
+* To parse this file, i need to take the coefficients and then flip them and pad with
+* the number of zeroes ..
+/
+
+/*bool parseCoefficientsFile(std::string coeffFileName, double * coeffs)
 {
 	errno_t err;
+
 	// open the input waveform file
 	//This file has to reside within the project directory.
-	err = fopen_s(&sampleFid, coeffFile, "rb");
+	err = fopen_s(&coefficientFid, coeffFileName.c_str(), "r");
 	if (err != 0)
 	{
-		perror("File not opened");
+		perror("Coefficients File not opened");
 		return 1;
 	}
-
-
-
 }
-
+*/
 /** 
 * Convert an integer array to a double array
 */
@@ -235,6 +240,7 @@ int main(int argc, char * argv[])
 	long numberOfChannels = 0;
 	long inputChannel = 0;
 	long outputChannel = 0;
+	double * coefficients;
 	
 	if (argc != 6)
 	{
@@ -249,6 +255,9 @@ int main(int argc, char * argv[])
 	inputChannel = strtol(argv[4], &p, 10);
 	outputChannel = strtol(argv[5], &p, 10);
 	std::string coefficientsFileName = argv[1];
+
+
+	//parseCoefficientsFile(coefficientsFileName, coefficients);
 
 	// open the input waveform file
 	//This file has to reside within the project directory.
@@ -275,7 +284,7 @@ int main(int argc, char * argv[])
 	}
 
 	// initialize the filter
-	firFilterInit();
+	//firFilterInit();
 
 	//Read in the sample file 16 bits at a time
     //size_t fread(void * ptr, size_t size, size_t count, FILE * stream);
@@ -298,7 +307,7 @@ int main(int argc, char * argv[])
     //	firFloat(coeffs, floatInput, floatOutput, size,	FILTER_LEN);
 	//firFilter(doubleInput, doubleOutput, SAMPLES);
 
-	firFilter(coeffs, doubleInput, doubleOutput, SAMPLES, 4);
+	firFilter(coeffs, doubleInput, doubleOutput, SAMPLES, FILTER_LEN);
 
 
 	
