@@ -258,7 +258,7 @@ int main(int argc, char * argv[])
 
 
 	//parseCoefficientsFile(coefficientsFileName, coefficients);
-
+	//Under configuration properties for the project you will find the place to put command line options
 	// open the input waveform file
 	//This file has to reside within the project directory.
 	err = fopen_s(&sampleFid, inputFileName.c_str(), "rb");
